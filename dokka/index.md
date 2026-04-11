@@ -11,5 +11,5 @@ Key features of the library include:
 
 A full description is available [on GitHub](https://github.com/xn32/json5k).
 
-# Package io.github.xn32.json5k
+# Package invoke.kitty.json5k
 Main package encapsulating the public API of the library.

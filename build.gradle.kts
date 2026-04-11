@@ -1,30 +1,33 @@
 import org.jetbrains.dokka.gradle.DokkaTask
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.net.URL
 
 plugins {
-    kotlin("multiplatform") version "1.8.21"
-    kotlin("plugin.serialization") version "1.8.21"
+    kotlin("multiplatform") version "2.2.21"
+    kotlin("plugin.serialization") version "2.2.21"
     id("org.jetbrains.kotlinx.kover") version "0.7.1"
     id("org.jetbrains.dokka") version "1.8.20"
     `maven-publish`
     signing
 }
 
-group = "io.github.xn32"
-version = "0.5.2"
+group = "invoke.kitty"
+version = "0.4.0"
 
 repositories {
     mavenCentral()
 }
 
+java {
+    withSourcesJar()
+}
+
 kotlin {
     jvm {
-        compilations.configureEach {
-            kotlinOptions {
-                jvmTarget = "1.8"
-            }
-        }
 
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_1_8
+        }
         testRuns.configureEach {
             executionTask.configure {
                 useJUnitPlatform()
@@ -49,7 +52,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.5.1")
+                api("org.jetbrains.kotlinx:kotlinx-serialization-core:1.9.0")
             }
         }
 
@@ -60,9 +63,6 @@ kotlin {
         }
     }
 }
-
-val sonatypeUsername: String? by project
-val sonatypePassword: String? by project
 
 val isReleaseVersion = !version.toString().endsWith("SNAPSHOT")
 
@@ -83,6 +83,11 @@ publishing {
                 developer {
                     id.set("xn32")
                     url.set("https://github.com/xn32")
+                }
+
+                developer {
+                    id.set("invokekitty")
+                    url.set("https://serenit.ie")
                 }
             }
 

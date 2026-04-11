@@ -47,7 +47,7 @@ Snapshot versions of the `main` branch are available from [here](https://s01.oss
 ### Non-hierarchical values
 
 ```kotlin
-import io.github.xn32.json5k.Json5
+import invoke.kitty.json5k.Json5
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 
@@ -75,7 +75,7 @@ Json5.decodeFromString<List<Double>>("[ 1.0,,")
 ### Serializable classes
 
 ```kotlin
-import io.github.xn32.json5k.Json5
+import invoke.kitty.json5k.Json5
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -99,7 +99,7 @@ Json5.decodeFromString<Person>("{ name: 'Carl', age: 42, age: 10 }")
 ### Classes with `@SerialName` annotations
 
 ```kotlin
-import io.github.xn32.json5k.Json5
+import invoke.kitty.json5k.Json5
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -122,8 +122,8 @@ Json5.decodeFromString<IntWrapper>("{ int: 10 }")
 ### Polymorphic types
 
 ```kotlin
-import io.github.xn32.json5k.ClassDiscriminator
-import io.github.xn32.json5k.Json5
+import invoke.kitty.json5k.ClassDiscriminator
+import invoke.kitty.json5k.Json5
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -151,8 +151,8 @@ Json5.decodeFromString<Producer>("{ init: 0 }")
 ### Serialization of comments for class properties
 
 ```kotlin
-import io.github.xn32.json5k.Json5
-import io.github.xn32.json5k.SerialComment
+import invoke.kitty.json5k.Json5
+import invoke.kitty.json5k.SerialComment
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 
@@ -200,7 +200,7 @@ Running this code will produce the following output:
 
 Control generated JSON5 output as follows:
 ```kotlin
-import io.github.xn32.json5k.Json5
+import invoke.kitty.json5k.Json5
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 

@@ -8,6 +8,8 @@ import kotlin.contracts.contract
 @Serializable(with = Json5ObjectSerializer::class)
 open class Json5Object(internal open val content: Map<String, Json5Element>) : Json5Element, Map<String, Json5Element> by content {
 
+    constructor(vararg values: Pair<String, Json5Element>) : this(values.toMap())
+
     internal open val comments: Map<String, String> get() = emptyMap()
 
     fun getComment(key: String): String? = comments[key]

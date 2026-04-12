@@ -1,11 +1,5 @@
 package invoke.kitty.json5k
 
-import invoke.kitty.json5k.deserialization.MainDecoder
-import invoke.kitty.json5k.deserialization.StructDecoder
-import invoke.kitty.json5k.format.Token
-import invoke.kitty.json5k.generation.FormatGenerator
-import invoke.kitty.json5k.parsing.InjectableLookaheadParser
-import invoke.kitty.json5k.serialization.MainEncoder
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
@@ -18,8 +12,7 @@ import kotlinx.serialization.encoding.Encoder
 
 @OptIn(ExperimentalSerializationApi::class, InternalSerializationApi::class)
 internal object Json5ElementSerializer : KSerializer<Json5Element> {
-    override val descriptor: SerialDescriptor =
-        buildSerialDescriptor(Json5Element::class.simpleName!!, SerialKind.CONTEXTUAL)
+    override val descriptor: SerialDescriptor = buildSerialDescriptor("invoke.kitty.json5k.Json5Element", SerialKind.CONTEXTUAL)
 
     override fun deserialize(decoder: Decoder): Json5Element {
         decoder as Json5Decoder
@@ -36,7 +29,7 @@ internal object Json5ElementSerializer : KSerializer<Json5Element> {
 @OptIn(ExperimentalSerializationApi::class, InternalSerializationApi::class)
 internal object Json5ObjectSerializer : KSerializer<Json5Object> {
 
-    override val descriptor: SerialDescriptor = buildSerialDescriptor(Json5Object::class.qualifiedName!!, SerialKind.CONTEXTUAL)
+    override val descriptor: SerialDescriptor = buildSerialDescriptor("invoke.kitty.json5k.Json5Object", SerialKind.CONTEXTUAL)
 
     override fun deserialize(decoder: Decoder): Json5Object {
         decoder as Json5Decoder
@@ -52,7 +45,7 @@ internal object Json5ObjectSerializer : KSerializer<Json5Object> {
 @OptIn(ExperimentalSerializationApi::class, InternalSerializationApi::class)
 internal object Json5ArraySerializer : KSerializer<Json5Array> {
 
-    override val descriptor: SerialDescriptor = buildSerialDescriptor(Json5Array::class.qualifiedName!!, SerialKind.CONTEXTUAL)
+    override val descriptor: SerialDescriptor = buildSerialDescriptor("invoke.kitty.json5k.Json5Array", SerialKind.CONTEXTUAL)
 
     override fun deserialize(decoder: Decoder): Json5Array {
         decoder as Json5Decoder
@@ -68,8 +61,7 @@ internal object Json5ArraySerializer : KSerializer<Json5Array> {
 @OptIn(ExperimentalSerializationApi::class, InternalSerializationApi::class)
 internal object Json5PrimitiveSerializer : KSerializer<Json5Primitive> {
 
-    override val descriptor: SerialDescriptor =
-        buildSerialDescriptor(Json5Primitive::class.simpleName!!, SerialKind.CONTEXTUAL)
+    override val descriptor: SerialDescriptor = buildSerialDescriptor("invoke.kitty.json5k.Json5Primitive", SerialKind.CONTEXTUAL)
 
     override fun deserialize(decoder: Decoder): Json5Primitive {
         decoder as Json5Decoder

@@ -4,6 +4,7 @@ import invoke.kitty.json5k.DuplicateKeyError
 import invoke.kitty.json5k.UnknownKeyError
 import invoke.kitty.json5k.format.Token
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.CompositeDecoder
 
@@ -36,7 +37,7 @@ internal class ClassDecoder(
                 return index
             }
 
-            else -> error("expected member name or end of object")
+            else -> throw SerializationException("expected member name or end of object")
         }
     }
 

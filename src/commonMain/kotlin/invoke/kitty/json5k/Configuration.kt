@@ -48,6 +48,28 @@ class ConfigBuilder {
      * single-line output is generated, double quotes will be used.
      */
     var useSingleQuotes: Boolean = false
+
+    fun copyFrom(json5: Json5) {
+        serializersModule = json5.serializersModule
+        val settings = json5.settings
+        classDiscriminator = settings.classDiscriminator
+        encodeDefaults = settings.encodeDefaults
+
+        when (val output = settings.outputStrategy) {
+            OutputStrategy.Compressed -> {
+                prettyPrint = false
+                useSingleQuotes = false
+                quoteMemberNames = false
+                indentationWidth = 4
+            }
+            is OutputStrategy.HumanReadable -> {
+                prettyPrint = true
+                useSingleQuotes = output.quoteCharacter == SINGLE_QUOTE
+                quoteMemberNames = output.quoteMemberNames
+                indentationWidth = output.indentationWith
+            }
+        }
+    }
 }
 
 internal data class Settings(

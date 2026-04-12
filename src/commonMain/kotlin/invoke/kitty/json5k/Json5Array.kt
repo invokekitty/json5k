@@ -7,6 +7,9 @@ import kotlin.contracts.contract
 
 @Serializable(with = Json5ArraySerializer::class)
 open class Json5Array(internal open val content: List<Json5Element>) : Json5Element, List<Json5Element> by content {
+
+    constructor(vararg values: Json5Element) : this(values.asList())
+
     override fun equals(other: Any?): Boolean = content == other
     override fun hashCode(): Int = content.hashCode()
     override fun toString(): String = content.joinToString(prefix = "[", postfix = "]", separator = ",")
@@ -29,6 +32,6 @@ inline fun buildJson5Array(builder: MutableJson5Array.() -> Unit): Json5Array {
     return array.toImmutable()
 }
 
-fun MutableJson5Array.toImmutable() = Json5Array(this)
+fun MutableJson5Array.toImmutable() = Json5Array(content)
 
 fun Json5Array.toMutable() = MutableJson5Array(this)

@@ -35,7 +35,7 @@ import kotlinx.serialization.modules.SerializersModule
  */
 sealed class Json5(
     override val serializersModule: SerializersModule,
-    private val settings: Settings
+    internal val settings: Settings
 ) : StringFormat {
 
     constructor(builder: ConfigBuilder) : this(

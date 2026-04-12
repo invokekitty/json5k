@@ -1,6 +1,8 @@
 package invoke.kitty.json5k.serialization
 
+import invoke.kitty.json5k.Hexadecimal
 import invoke.kitty.json5k.generation.FormatGenerator
+import invoke.kitty.json5k.toHexFormat
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -58,7 +60,8 @@ internal abstract class StructEncoder(protected val parent: MainEncoder) : Compo
     }
 
     open fun getEncoderFor(descriptor: SerialDescriptor, index: Int): Encoder {
-        return parent
+        val hexConfig = descriptor.getElementAnnotations(index).firstNotNullOfOrNull { it as? Hexadecimal }
+        return if (hexConfig != null) HexNumberEncoder(parent, hexConfig.toHexFormat()) else parent
     }
 
     @ExperimentalSerializationApi

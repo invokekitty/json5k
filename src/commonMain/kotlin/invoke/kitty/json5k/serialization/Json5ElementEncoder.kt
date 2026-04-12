@@ -19,6 +19,7 @@ class Json5ElementEncoder(
 
     private val elementStack: ArrayDeque<Json5Element> = ArrayDeque()
     private var key: Json5Primitive? = null
+    private var hexConfig: Hexadecimal? = null
 
     private var last: Json5Element
         get() = elementStack.last()
@@ -37,8 +38,8 @@ class Json5ElementEncoder(
 
     override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoder {
         last = when(descriptor.kind) {
-            StructureKind.CLASS, StructureKind.OBJECT, is PolymorphicKind -> MutableJson5Object()
-            StructureKind.MAP -> MutableJson5ObjectForMapEncoding()
+            StructureKind.CLASS, StructureKind.OBJECT, StructureKind.MAP, is PolymorphicKind ->
+                MutableJson5Object()
             StructureKind.LIST -> MutableJson5Array()
             else -> throw UnsupportedOperationException()
         }
@@ -46,35 +47,44 @@ class Json5ElementEncoder(
     }
 
     override fun beginElement(descriptor: SerialDescriptor, index: Int) {
+        hexConfig = descriptor.getElementAnnotations(index).firstNotNullOfOrNull { it as? Hexadecimal }
         elementStack.addLast(Json5Null)
     }
 
     override fun endElement(descriptor: SerialDescriptor, index: Int) {
+        hexConfig = null
         val element = elementStack.removeLast()
+        val name = descriptor.getElementName(index)
+        val discriminator = descriptor.getClassDiscriminator(json5.settings)
         when (val outer = last) {
-            is MutableJson5Object -> {
-                val comment = descriptor.getElementAnnotations(index)
-                    .find { it is SerialComment } as SerialComment?
-                val key = descriptor.getElementName(index)
-                outer[key] = element
-                comment?.let { outer.putComment(key, it.value) }
+            is MutableJson5Object if (descriptor.kind is PolymorphicKind && name != discriminator) -> {
+                for ((key, value) in element.asObject()) {
+                    require(key != discriminator) { "member name '$key' is reserved" }
+                    outer[key] = value
+                    element.getComment(key)?.let { outer.putComment(key, it) }
+                }
             }
-            is MutableJson5Array -> outer.add(element)
-            is MutableJson5ObjectForMapEncoding -> when (val key = key) {
+            is MutableJson5Object if (descriptor.kind == StructureKind.MAP) -> when (val key = key) {
                 null -> this.key = element as? Json5Primitive ?: throw SerializationException("Non-primitive keys are not allowed")
                 else -> { outer[key.content] = element; this.key = null }
             }
+            is MutableJson5Object -> {
+                outer[name] = element
+                val comment = descriptor.getElementAnnotations(index)
+                    .filterIsInstance<SerialComment>().firstOrNull()
+                comment?.let { outer.putComment(name, it.value) }
+            }
+            is MutableJson5Array -> outer.add(element)
             else -> throw UnsupportedOperationException()
         }
     }
 
     override fun endStructure(descriptor: SerialDescriptor) {
         if (key != null) throw SerializationException("Incompletely encoded map")
-        last = last.toImmutable()
     }
 
     override fun encodeJson5Element(element: Json5Element) {
-        last = element.toImmutable()
+        last = element
     }
 
     override fun encodeBoolean(value: Boolean) {
@@ -82,7 +92,7 @@ class Json5ElementEncoder(
     }
 
     override fun encodeByte(value: Byte) {
-        last = Json5Primitive(value)
+        last = Json5Primitive(value, hexConfig)
     }
 
     override fun encodeChar(value: Char) {
@@ -102,11 +112,11 @@ class Json5ElementEncoder(
     }
 
     override fun encodeInt(value: Int) {
-        last = Json5Primitive(value)
+        last = Json5Primitive(value, hexConfig)
     }
 
     override fun encodeLong(value: Long) {
-        last = Json5Primitive(value)
+        last = Json5Primitive(value, hexConfig)
     }
 
     override fun encodeNull() {
@@ -114,22 +124,71 @@ class Json5ElementEncoder(
     }
 
     override fun encodeShort(value: Short) {
-        last = Json5Primitive(value)
+        last = Json5Primitive(value, hexConfig)
     }
 
     override fun encodeString(value: String) {
         last = Json5Primitive(value)
     }
 
-    override fun encodeInline(descriptor: SerialDescriptor): Encoder = this
+    override fun encodeInline(descriptor: SerialDescriptor): Encoder =
+        if (descriptor.isUnsignedNumber) this.UnsignedEncoder() else this
+    
+    private inner class UnsignedEncoder : Encoder {
+        override fun encodeByte(value: Byte) {
+            last = Json5Primitive(value.toUByte(), hexConfig)
+        }
 
-    private fun Json5Element.toImmutable(): Json5Element = when (this) {
-        is MutableJson5Object, is MutableJson5ObjectForMapEncoding ->
-            if (comments.isNotEmpty()) Json5Object.Commented(this.content, this.comments) else Json5Object(this.content)
-        is MutableJson5Array -> Json5Array(this.content)
-        else -> this
+        override fun encodeInt(value: Int) {
+            last = Json5Primitive(value.toUInt(), hexConfig)
+        }
+
+        override fun encodeLong(value: Long) {
+            last = Json5Primitive(value.toULong(), hexConfig)
+        }
+
+        override fun encodeShort(value: Short) {
+            last = Json5Primitive(value.toUShort(), hexConfig)
+        }
+
+        override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoder {
+            throw SerializationException()
+        }
+
+        override fun encodeBoolean(value: Boolean) {
+            throw SerializationException()
+        }
+
+        override fun encodeChar(value: Char) {
+            throw SerializationException()
+        }
+
+        override fun encodeDouble(value: Double) {
+            throw SerializationException()
+        }
+
+        override fun encodeEnum(enumDescriptor: SerialDescriptor, index: Int) {
+            throw SerializationException()
+        }
+
+        override fun encodeFloat(value: Float) {
+            throw SerializationException()
+        }
+
+        override fun encodeInline(descriptor: SerialDescriptor): Encoder {
+            throw SerializationException()
+        }
+
+        @ExperimentalSerializationApi
+        override fun encodeNull() {
+            throw SerializationException()
+        }
+
+        override fun encodeString(value: String) {
+            throw SerializationException()
+        }
+
+        override val serializersModule: SerializersModule
+            get() = json5.serializersModule
     }
-
-    @Suppress("DELEGATED_MEMBER_HIDES_SUPERTYPE_OVERRIDE")
-    private class MutableJson5ObjectForMapEncoding(content: MutableMap<String, Json5Element> = mutableMapOf()) : Json5Object(content), MutableMap<String, Json5Element> by content
 }

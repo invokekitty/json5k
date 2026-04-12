@@ -162,6 +162,38 @@ annotation class SerialComment(
     val value: String
 )
 
+/**
+ * Annotation to specify that an integer should be encoded as hexadecimal, has no effect on decoding
+ */
+@OptIn(ExperimentalSerializationApi::class)
+@Target(AnnotationTarget.PROPERTY)
+@SerialInfo
+annotation class Hexadecimal(
+
+    /**
+     * If value should be uppercase. See: [HexFormat]
+     */
+    val upperCase: Boolean = false,
+    /**
+     * Remove leading zeroes from hex number. See: [HexFormat]
+     */
+    val removeLeadingZeros: Boolean = true,
+    /**
+     * Minimum length of encoded hexadecimal number. See: [HexFormat]
+     */
+    val minLength: Int = 1
+)
+
+internal fun Hexadecimal.toHexFormat(): HexFormat = HexFormat {
+    upperCase = this@toHexFormat.upperCase
+    number {
+        prefix = "0x"
+        suffix = ""
+        removeLeadingZeros = this@toHexFormat.removeLeadingZeros
+        minLength = this@toHexFormat.minLength
+    }
+}
+
 fun <T> Json5.encodeToJson5Element(serializer: SerializationStrategy<T>, value: T): Json5Element {
     val encoder = Json5ElementEncoder(this)
     serializer.serialize(encoder, value)

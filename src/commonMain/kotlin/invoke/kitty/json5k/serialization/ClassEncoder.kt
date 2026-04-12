@@ -25,7 +25,7 @@ internal class ClassEncoder(
 
         val memberName = descriptor.getElementName(index)
         if (reservedKeys.contains(memberName)) {
-            throw UnsupportedOperationException("member name '$memberName' is reserved")
+            throw IllegalArgumentException("member name '$memberName' is reserved")
         }
 
         generator.put(Token.MemberName(descriptor.getElementName(index)))

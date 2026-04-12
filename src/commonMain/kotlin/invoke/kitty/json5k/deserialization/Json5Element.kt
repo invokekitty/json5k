@@ -22,24 +22,27 @@ internal sealed class AbstractJson5ElementDecoder(
 
     override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder {
         return when (val kind = descriptor.kind) {
-            CLASS, is PolymorphicKind, OBJECT -> {
+            CLASS, OBJECT ->
                 Json5ClassDecoder(
                     delegate = this,
                     json = element.asObject(),
                 )
-            }
-            LIST -> {
+            is PolymorphicKind ->
+                Json5PolymorphicDecoder(
+                    delegate = this,
+                    classDecoder = Json5ClassDecoder(this, element.asObject()),
+                    discriminator = descriptor.getClassDiscriminator(json5.settings)
+                )
+            LIST ->
                 Json5ArrayDecoder(
                     delegate = this,
                     array = element.asArray()
                 )
-            }
-            MAP -> {
+            MAP ->
                 Json5MapDecoder(
                     delegate = this,
                     map = element.asObject()
                 )
-            }
             else -> throw UnsupportedOperationException("Unsupported serial kind: $kind")
         }
     }
@@ -57,7 +60,8 @@ internal sealed class AbstractJson5ElementDecoder(
 
     override fun decodeFloat(): Float = element.asPrimitive().float
 
-    override fun decodeInline(descriptor: SerialDescriptor): Decoder = this
+    override fun decodeInline(descriptor: SerialDescriptor): Decoder =
+        if (descriptor.isUnsignedNumber) Json5UnsignedDecoder(json5, element) else this
 
     override fun decodeInt(): Int = element.asPrimitive().int
 
@@ -80,6 +84,17 @@ internal class Json5ElementDecoder(
     json5: Json5,
     override val element: Json5Element
 ) : AbstractJson5ElementDecoder(json5)
+
+internal class Json5UnsignedDecoder(
+    json5: Json5,
+    override val element: Json5Element
+) : AbstractJson5ElementDecoder(json5) {
+
+    override fun decodeByte(): Byte = element.asPrimitive().ubyte.toByte()
+    override fun decodeInt(): Int = element.asPrimitive().uint.toInt()
+    override fun decodeLong(): Long = element.asPrimitive().ulong.toLong()
+    override fun decodeShort(): Short = element.asPrimitive().ushort.toShort()
+}
 
 internal sealed class AbstractJson5CompositeDecoder(
     delegate: AbstractJson5ElementDecoder
@@ -107,6 +122,30 @@ internal sealed class AbstractJson5CompositeDecoder(
 
     override fun endStructure(descriptor: SerialDescriptor) {}
 
+}
+
+internal class Json5PolymorphicDecoder(
+    delegate: AbstractJson5ElementDecoder,
+    private val classDecoder: Json5ClassDecoder,
+    private val discriminator: String
+) : AbstractJson5CompositeDecoder(delegate) {
+    override val element: Json5Object = classDecoder.json
+
+    override fun beginElement(descriptor: SerialDescriptor, index: Int) {
+        classDecoder.beginElement(descriptor, index)
+    }
+
+    override fun endElement(descriptor: SerialDescriptor, index: Int) {
+        classDecoder.endElement(descriptor, index)
+    }
+
+    override fun decodeElementIndex(descriptor: SerialDescriptor): Int =
+        classDecoder.decodeElementIndex(descriptor)
+
+    override fun <T> decodeSerializableValue(deserializer: DeserializationStrategy<T>): T {
+        val decoder = Json5ElementDecoder(json5, Json5Object(element - discriminator))
+        return deserializer.deserialize(decoder)
+    }
 }
 
 internal class Json5ClassDecoder(

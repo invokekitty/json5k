@@ -1,5 +1,6 @@
 package invoke.kitty.json5k.serialization
 
+import invoke.kitty.json5k.Hexadecimal
 import invoke.kitty.json5k.Json5
 import invoke.kitty.json5k.Json5Array
 import invoke.kitty.json5k.Json5Element
@@ -97,7 +98,8 @@ internal class MainEncoder(
                 when(element.type) {
                     Json5Primitive.Type.STRING -> generator.put(Token.Str(element.content))
                     Json5Primitive.Type.BOOLEAN -> generator.put(Token.Bool(element.content.toBooleanStrict()))
-                    Json5Primitive.Type.INTEGER, Json5Primitive.Type.FLOAT -> generator.put(Token.Num(element.content))
+                    Json5Primitive.Type.INTEGER,
+                    Json5Primitive.Type.FLOAT -> generator.put(Token.Num(element.content))
                     Json5Primitive.Type.NULL -> generator.put(Token.Null)
                 }
             }
@@ -128,4 +130,30 @@ private class UnsignedEncoder(private val parent: MainEncoder) : Encoder {
     override fun encodeInt(value: Int) = encodeUnsigned(value.toUInt().toULong())
     override fun encodeLong(value: Long) = encodeUnsigned(value.toULong())
     override fun encodeNull() = parent.encodeNull()
+}
+
+internal class HexNumberEncoder(
+    private val parent: MainEncoder,
+    private val hexFormat: HexFormat
+) : Encoder by parent, Json5Encoder by parent {
+
+    override fun encodeByte(value: Byte) {
+        encodeHex(value.toHexString(hexFormat))
+    }
+
+    override fun encodeInt(value: Int) {
+        encodeHex(value.toHexString(hexFormat))
+    }
+
+    override fun encodeLong(value: Long) {
+        encodeHex(value.toHexString(hexFormat))
+    }
+
+    override fun encodeShort(value: Short) {
+        encodeHex(value.toHexString(hexFormat))
+    }
+
+    private fun encodeHex(string: String) {
+        parent.generator.put(Token.Num(string))
+    }
 }

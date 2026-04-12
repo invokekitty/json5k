@@ -21,10 +21,38 @@ sealed class Json5Primitive(val content: String, val type: Type) : Json5Element 
 
 fun Json5Primitive(value: String): Json5Primitive = Json5Literal(value, Json5Primitive.Type.STRING)
 
-fun Json5Primitive(value: Number): Json5Primitive = Json5Literal(
-    value.toString(),
-    if (value is Float || value is Double) Json5Primitive.Type.FLOAT else Json5Primitive.Type.INTEGER
-)
+fun Json5Primitive(value: Number): Json5Primitive {
+    return if (value is Float || value is Double) Json5Primitive(value.toDouble())
+    else Json5Primitive(value.toLong())
+}
+
+fun Json5Primitive(value: Byte, hex: Hexadecimal? = null): Json5Primitive =
+    Json5Literal(hex?.let { value.toHexString(it.toHexFormat()) } ?: value.toString(), Json5Primitive.Type.INTEGER)
+
+fun Json5Primitive(value: UByte, hex: Hexadecimal? = null): Json5Primitive =
+    Json5Literal(hex?.let { value.toHexString(it.toHexFormat()) } ?: value.toString(), Json5Primitive.Type.INTEGER)
+
+fun Json5Primitive(value: Short, hex: Hexadecimal? = null): Json5Primitive =
+    Json5Literal(hex?.let { value.toHexString(it.toHexFormat()) } ?: value.toString(), Json5Primitive.Type.INTEGER)
+
+fun Json5Primitive(value: UShort, hex: Hexadecimal? = null): Json5Primitive =
+    Json5Literal(hex?.let { value.toHexString(it.toHexFormat()) } ?: value.toString(), Json5Primitive.Type.INTEGER)
+
+fun Json5Primitive(value: Int, hex: Hexadecimal? = null): Json5Primitive =
+    Json5Literal(hex?.let { value.toHexString(it.toHexFormat()) } ?: value.toString(), Json5Primitive.Type.INTEGER)
+
+fun Json5Primitive(value: UInt, hex: Hexadecimal? = null): Json5Primitive =
+    Json5Literal(hex?.let { value.toHexString(it.toHexFormat()) } ?: value.toString(), Json5Primitive.Type.INTEGER)
+
+fun Json5Primitive(value: Long, hex: Hexadecimal? = null): Json5Primitive =
+    Json5Literal(hex?.let { value.toHexString(it.toHexFormat()) } ?: value.toString(), Json5Primitive.Type.INTEGER)
+
+fun Json5Primitive(value: ULong, hex: Hexadecimal? = null): Json5Primitive =
+    Json5Literal(hex?.let { value.toHexString(it.toHexFormat()) } ?: value.toString(), Json5Primitive.Type.INTEGER)
+
+fun Json5Primitive(value: Float): Json5Primitive = Json5Literal(value.toString(), Json5Primitive.Type.FLOAT)
+
+fun Json5Primitive(value: Double): Json5Primitive = Json5Literal(value.toString(), Json5Primitive.Type.FLOAT)
 
 fun Json5Primitive(value: Boolean): Json5Primitive =
     Json5Literal(if (value) "true" else "false", Json5Primitive.Type.BOOLEAN)
@@ -34,7 +62,7 @@ fun Json5Primitive(value: Nothing?): Json5Null = Json5Null
 
 object Json5Null : Json5Primitive("null", Type.NULL)
 
-internal class Json5Literal(content: String, type: Type) : Json5Primitive(content, type) {
+class Json5Literal internal constructor(content: String, type: Type) : Json5Primitive(content, type) {
     init {
         require(type != Type.NULL) { "Json5Literal cannot be of type NULL" }
     }
@@ -63,6 +91,30 @@ val Json5Primitive.longOrNull: Long?
 
 val Json5Primitive.long: Long
     get() = content.parseLong(Long.MIN_VALUE..Long.MAX_VALUE).getOrThrow()
+
+val Json5Primitive.ubyteOrNull: UByte?
+    get() = content.parseULong(UByte.MIN_VALUE.toULong()..UByte.MAX_VALUE.toULong()).getOrNull()?.toUByte()
+
+val Json5Primitive.ubyte: UByte
+    get() = content.parseULong(UByte.MIN_VALUE.toULong()..UByte.MAX_VALUE.toULong()).getOrThrow().toUByte()
+
+val Json5Primitive.ushortOrNull: UShort?
+    get() = content.parseULong(UShort.MIN_VALUE.toULong()..UShort.MAX_VALUE.toULong()).getOrNull()?.toUShort()
+
+val Json5Primitive.ushort: UShort
+    get() = content.parseULong(UShort.MIN_VALUE.toULong()..UShort.MAX_VALUE.toULong()).getOrThrow().toUShort()
+
+val Json5Primitive.uintOrNull: UInt?
+    get() = content.parseULong(UInt.MIN_VALUE.toULong()..UInt.MAX_VALUE.toULong()).getOrNull()?.toUInt()
+
+val Json5Primitive.uint: UInt
+    get() = content.parseULong(UInt.MIN_VALUE.toULong()..UInt.MAX_VALUE.toULong()).getOrThrow().toUInt()
+
+val Json5Primitive.ulongOrNull: ULong?
+    get() = content.parseULong(ULong.MIN_VALUE..ULong.MAX_VALUE).getOrNull()
+
+val Json5Primitive.ulong: ULong
+    get() = content.parseULong(ULong.MIN_VALUE..ULong.MAX_VALUE).getOrThrow()
 
 val Json5Primitive.floatOrNull: Float?
     get() = content.toFloatOrNull()

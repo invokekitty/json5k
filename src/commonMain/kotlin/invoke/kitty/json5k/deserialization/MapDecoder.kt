@@ -46,25 +46,29 @@ private class KeyDecoder(private val parent: MainDecoder) : Decoder {
     private val parser: LookaheadParser<Token> = parent.parser
 
     override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder = throwKeyTypeException()
-    override fun decodeEnum(enumDescriptor: SerialDescriptor): Int = throwKeyTypeException()
+    override fun decodeEnum(enumDescriptor: SerialDescriptor): Int = enumDescriptor.getElementIndex(decodeString())
 
-    override fun decodeBoolean(): Boolean = throwKeyTypeException()
+    override fun decodeBoolean(): Boolean = decodeString().toBooleanStrict()
 
-    override fun decodeByte(): Byte = throwKeyTypeException()
-    override fun decodeShort(): Short = throwKeyTypeException()
-    override fun decodeInt(): Int = throwKeyTypeException()
-    override fun decodeLong(): Long = throwKeyTypeException()
+    override fun decodeByte(): Byte = decodeString().toByte()
+    override fun decodeShort(): Short = decodeString().toShort()
+    override fun decodeInt(): Int = decodeString().toInt()
+    override fun decodeLong(): Long = decodeString().toLong()
 
-    override fun decodeChar(): Char = throwKeyTypeException()
+    override fun decodeChar(): Char {
+        val str = decodeString()
+        require(str.length == 1)
+        return str[0]
+    }
 
-    override fun decodeFloat(): Float = throwKeyTypeException()
-    override fun decodeDouble(): Double = throwKeyTypeException()
+    override fun decodeFloat(): Float = decodeString().toFloat()
+    override fun decodeDouble(): Double = decodeString().toDouble()
 
     @ExperimentalSerializationApi
-    override fun decodeNotNullMark(): Boolean = parent.decodeNotNullMark()
+    override fun decodeNotNullMark(): Boolean = decodeString() == "null"
 
     @ExperimentalSerializationApi
-    override fun decodeNull(): Nothing = throwKeyTypeException()
+    override fun decodeNull() = null
 
     override fun decodeInline(descriptor: SerialDescriptor): Decoder = this
 

@@ -11,6 +11,7 @@ import invoke.kitty.json5k.Settings
 import invoke.kitty.json5k.format.Token
 import invoke.kitty.json5k.generation.FormatGenerator
 import invoke.kitty.json5k.isUnsignedNumber
+import invoke.kitty.json5k.toSignedHexString
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.PolymorphicKind
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -110,7 +111,7 @@ internal class MainEncoder(
 @ExperimentalSerializationApi
 private class UnsignedEncoder(private val parent: MainEncoder) : Encoder {
     override val serializersModule: SerializersModule = parent.serializersModule
-    private val generator: FormatGenerator = parent.generator
+    val generator: FormatGenerator = parent.generator
 
     override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoder = throw UnsupportedOperationException()
     override fun encodeBoolean(value: Boolean) = throw UnsupportedOperationException()
@@ -138,19 +139,49 @@ internal class HexNumberEncoder(
 ) : Encoder by parent, Json5Encoder by parent {
 
     override fun encodeByte(value: Byte) {
-        encodeHex(value.toHexString(hexFormat))
+        encodeHex(value.toSignedHexString(hexFormat))
     }
 
     override fun encodeInt(value: Int) {
-        encodeHex(value.toHexString(hexFormat))
+        encodeHex(value.toSignedHexString(hexFormat))
     }
 
     override fun encodeLong(value: Long) {
-        encodeHex(value.toHexString(hexFormat))
+        encodeHex(value.toSignedHexString(hexFormat))
     }
 
     override fun encodeShort(value: Short) {
-        encodeHex(value.toHexString(hexFormat))
+        encodeHex(value.toSignedHexString(hexFormat))
+    }
+
+    private fun encodeHex(string: String) {
+        parent.generator.put(Token.Num(string))
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    override fun encodeInline(descriptor: SerialDescriptor): Encoder =
+        if (descriptor.isUnsignedNumber) UnsignedHexEncoder(UnsignedEncoder(parent), hexFormat) else this
+}
+
+@OptIn(ExperimentalSerializationApi::class)
+private class UnsignedHexEncoder(
+    private val parent: UnsignedEncoder,
+    private val format: HexFormat
+) : Encoder by parent {
+    override fun encodeByte(value: Byte) {
+        encodeHex(value.toUByte().toHexString(format))
+    }
+
+    override fun encodeLong(value: Long) {
+        encodeHex(value.toULong().toHexString(format))
+    }
+
+    override fun encodeInt(value: Int) {
+        encodeHex(value.toUInt().toHexString(format))
+    }
+
+    override fun encodeShort(value: Short) {
+        encodeHex(value.toUShort().toHexString(format))
     }
 
     private fun encodeHex(string: String) {

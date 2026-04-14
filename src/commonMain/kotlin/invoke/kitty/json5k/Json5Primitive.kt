@@ -27,25 +27,25 @@ fun Json5Primitive(value: Number): Json5Primitive {
 }
 
 fun Json5Primitive(value: Byte, hex: Hexadecimal? = null): Json5Primitive =
-    Json5Literal(hex?.let { value.toHexString(it.toHexFormat()) } ?: value.toString(), Json5Primitive.Type.INTEGER)
+    Json5Literal(hex?.let { value.toSignedHexString(it.toHexFormat()) } ?: value.toString(), Json5Primitive.Type.INTEGER)
 
 fun Json5Primitive(value: UByte, hex: Hexadecimal? = null): Json5Primitive =
     Json5Literal(hex?.let { value.toHexString(it.toHexFormat()) } ?: value.toString(), Json5Primitive.Type.INTEGER)
 
 fun Json5Primitive(value: Short, hex: Hexadecimal? = null): Json5Primitive =
-    Json5Literal(hex?.let { value.toHexString(it.toHexFormat()) } ?: value.toString(), Json5Primitive.Type.INTEGER)
+    Json5Literal(hex?.let { value.toSignedHexString(it.toHexFormat()) } ?: value.toString(), Json5Primitive.Type.INTEGER)
 
 fun Json5Primitive(value: UShort, hex: Hexadecimal? = null): Json5Primitive =
     Json5Literal(hex?.let { value.toHexString(it.toHexFormat()) } ?: value.toString(), Json5Primitive.Type.INTEGER)
 
 fun Json5Primitive(value: Int, hex: Hexadecimal? = null): Json5Primitive =
-    Json5Literal(hex?.let { value.toHexString(it.toHexFormat()) } ?: value.toString(), Json5Primitive.Type.INTEGER)
+    Json5Literal(hex?.let { value.toSignedHexString(it.toHexFormat()) } ?: value.toString(), Json5Primitive.Type.INTEGER)
 
 fun Json5Primitive(value: UInt, hex: Hexadecimal? = null): Json5Primitive =
     Json5Literal(hex?.let { value.toHexString(it.toHexFormat()) } ?: value.toString(), Json5Primitive.Type.INTEGER)
 
 fun Json5Primitive(value: Long, hex: Hexadecimal? = null): Json5Primitive =
-    Json5Literal(hex?.let { value.toHexString(it.toHexFormat()) } ?: value.toString(), Json5Primitive.Type.INTEGER)
+    Json5Literal(hex?.let { value.toSignedHexString(it.toHexFormat()) } ?: value.toString(), Json5Primitive.Type.INTEGER)
 
 fun Json5Primitive(value: ULong, hex: Hexadecimal? = null): Json5Primitive =
     Json5Literal(hex?.let { value.toHexString(it.toHexFormat()) } ?: value.toString(), Json5Primitive.Type.INTEGER)
